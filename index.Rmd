@@ -1,5 +1,5 @@
 ---
-title: "Tarea 1 Tablero de Control para covid19 CR"
+title: "Tablero de Control para covid19 CR"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
