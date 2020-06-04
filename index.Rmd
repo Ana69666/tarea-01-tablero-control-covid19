@@ -1,6 +1,6 @@
 ---
-title: "Tarea 1 Tablero de Control para covid19 CR"
-subtitle: "Elaborado por Ana Lopezu.(B94386), Matthias Pelz(B95845), Jefferson Salas()"
+title: "Tablero de Control para covid19 CR"
+subtitle: "Elaborado por Ana LopezU.(B94386), Matthias Pelz(B95845), Jefferson Salas()"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
