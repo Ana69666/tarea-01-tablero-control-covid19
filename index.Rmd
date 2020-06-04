@@ -210,7 +210,7 @@ kable(
 ) %>%
 kable_styling() %>%
 scroll_box(
-  width = "1500px", 
+  width = "2000px", 
   height = "800px", 
   fixed_thead = TRUE
 )
