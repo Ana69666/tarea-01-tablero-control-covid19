@@ -1,9 +1,10 @@
 ---
 title: "Tarea 1 Tablero de Control para covid19 CR"
+subtitle: "Elaborado por Ana Lopezu.(B94386), Matthias Pelz(B95845), Jefferson Salas()"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
+    orientation: rows
+    
 ---
 
 ```{r setup, include=FALSE}
@@ -13,33 +14,205 @@ library(leaflet)
 library(knitr)
 library(kableExtra)
 library(dplyr)
+library(RColorBrewer)
+library(tidyr)
+library(graphics)
 library(ggplot2)
+library(tidyverse)
 
+# Registros
+cantones_covid19 = st_read("https://raw.githubusercontent.com/geoprocesamiento-2020i/datos/master/covid19/casos/cr/cr-covid19-cantones.geojson")
+cantones_covid19_simp1 = st_simplify(cantones_covid19, dTolerance = 1000)
+cantones_covid19 = st_transform(cantones_covid19, 4326)
+cantones_covid19[is.na(cantones_covid19)] = 0
+
+
+provincias_covid19 <- cantones_covid19 %>%
+group_by(provincia) %>%
+summarize(confirmados = sum(confirmados, na.rm = TRUE), recuperados = sum(recuperados, na.rm = TRUE), muertes = sum(muertes, na.rm = TRUE), activos = sum(activos, na.rm = TRUE), area = sum(area, na.rm = TRUE))  
 
 
 ```
 
-Column {data-width=650}
+Mapas Casos Confirmados COVID-19
+===================================== 
+
+Row {data-width=20}
 -----------------------------------------------------------------------
 
-### Chart A
-
+### Casos Confirmados
 ```{r}
+
+cantones_covid19[is.na(cantones_covid19)] = 0
+suma <- sum(cantones_covid19$confirmados)
+valueBox(suma, icon = "fa-check", color="info")
 
 ```
 
-Column {data-width=350}
+### Casos recuperados
+```{r}
+cantones_covid19[is.na(cantones_covid19)] = 0
+suma <- sum(cantones_covid19$recuperados)           
+valueBox(suma, icon = "fa-users", color ="success")
+```
+
+### Casos fallecidos
+```{r}
+cantones_covid19[is.na(cantones_covid19)] = 0
+suma <- sum(cantones_covid19$muertes)           
+valueBox(suma, icon = "fa-users", color = "danger")
+```
+
+### Casos activos
+```{r}
+cantones_covid19[is.na(cantones_covid19)] = 0
+suma <- sum(cantones_covid19$activos)           
+valueBox(suma, icon = "fa-users", color = "warning")
+```
+
+
+
+
+Column {data-width=600}
 -----------------------------------------------------------------------
 
-### Chart B
+### Casos confirmados COVID-19 por cantón, Costa Rica
 
 ```{r}
+pal <- colorNumeric(
+  palette = "Greens",
+  domain = cantones_covid19$confirmados)
+m1 <- leaflet(cantones_covid19) %>%
+  addTiles() %>%
+  addProviderTiles(providers$Esri.WorldImagery, group = "Imágenes de ESRI") %>%
+  addProviderTiles(providers$Stamen.TonerLite, group = "Stamen Toner Lite") %>%
+  addProviderTiles(providers$OpenStreetMap.Mapnik, group = "OpenStreetMap") %>%  
+  addPolygons(fillColor = ~pal(confirmados), 
+              stroke=F, 
+              fillOpacity = 0.9, 
+              color="white", 
+              weight=0.4, 
+              smoothFactor = 0.3,
+              popup = paste("Cantón: ", cantones_covid19$canton, "<br>",
+                            "Confirmados: ", cantones_covid19$confirmados, "<br>",
+                            "Activos: ", cantones_covid19$activos, "<br>",
+                            "Recuperados: ", cantones_covid19$recuperados,"<br>",
+                            "Fallecidos: ", cantones_covid19$muertes, "<br>"))%>%
+  addLayersControl(baseGroups = c("Stamen Toner Lite", "Imágenes de ESRI"))
 
+m1
 ```
 
-### Chart C
+             
+### Casos confirmados COVID-19 por provincia, Costa Rica
+
+```{r}
+pal <- colorNumeric(
+  palette = "Blues",
+  domain = provincias_covid19$confirmados)
+m2 <- leaflet(provincias_covid19) %>%
+  addTiles() %>%
+  addProviderTiles(providers$Esri.WorldImagery, group = "Imágenes de ESRI") %>%
+  addProviderTiles(providers$Stamen.TonerLite, group = "Stamen Toner Lite") %>%
+  addProviderTiles(providers$OpenStreetMap.Mapnik, group = "OpenStreetMap") %>%  
+  addPolygons(fillColor = ~pal(confirmados), 
+              stroke=F, 
+              fillOpacity = 0.9, 
+              color="white", 
+              weight=0.4, 
+              smoothFactor = 0.3,
+              popup = paste("Provincia: ", provincias_covid19$canton, "<br>",
+                            "Confirmados: ", provincias_covid19$confirmados, "<br>",
+                            "Activos: ", provincias_covid19$activos, "<br>",
+                            "Recuperados: ", provincias_covid19$recuperados,"<br>",
+                            "Fallecidos: ", provincias_covid19$muertes, "<br>"))%>%
+  addLayersControl(baseGroups = c("Stamen Toner Lite", "Imágenes de ESRI"))
+
+m2
+```
+
+Datos Casos confirmados COVID-19
+===========================================   
+
+Row {data-width=200}
+-----------------------------------------------------------------------
+
+### Datos de casos confirmados por cantón Covid-19
+
+```{r}
+cantones_covid19 %>%
+  select(Confirmados=confirmados, Canton=canton) %>%
+  arrange(Confirmados) %>%
+  st_drop_geometry() %>%
+  kable()%>%
+  kable_styling() %>%
+  scroll_box(
+    width = "600px", 
+    height = "400px", 
+    fixed_thead = TRUE
+  )
+```
+
+### Datos de casos confirmados por provincia
+
+```{r}
+provincias_covid19 %>%
+  select(Confirmados=confirmados, Provincia=provincia) %>%
+  arrange(Confirmados) %>%
+  st_drop_geometry() %>%
+  kable()%>%
+  kable_styling() %>%
+  scroll_box(
+    width = "600px", 
+    height = "600px", 
+    fixed_thead = TRUE
+  )
+```
+
+
+
+
+
+
+Grafico Datos por Provincia COVID-19
+=====================================   
+
+
+
+```{r}
+covid19_provincia = cantones_covid19 %>%
+group_by(provincia) %>%
+summarize(confirmados = sum(confirmados, na.rm = TRUE))
+covid19_provincia.ordenado <- order(covid19_provincia$confirmados, decreasing=TRUE)
+covid19_provincia.confirmados <- covid19_provincia[covid19_provincia.ordenado,]
+ggplot(covid19_provincia, aes(x=reorder(provincia, -confirmados), y=confirmados)) +
+  ggtitle("Casos confirmados de Covid-19 en Costa Rica") +
+  xlab("Provincias") + 
+  ylab("Casos confirmados") +  
+  geom_col() +
+  geom_text(aes(label=confirmados), vjust=-0.3, size=3.5)
+```
+
+Tabla datos Totales
+===================================== 
+
+Column {data-width=2000}
+-----------------------------------------------------------------------
 
 ```{r}
 
+cantones_covid19.orden <- order(cantones_covid19$canton)
+cantones_covid19.ordenadocanton <- cantones_covid19[cantones_covid19,]
+kable(
+  cantones_covid19.ordenadocanton[, c("canton","recuperados","confirmados","muertes"), drop = TRUE], 
+  col.names=c("Cantón","Recuperados","Confirmados","Muertes"),  
+  caption="Tabla de casos Covid19 por cantón en Costa Rica"
+) %>%
+kable_styling() %>%
+scroll_box(
+  width = "800px", 
+  height = "800px", 
+  fixed_thead = TRUE
+)
 ```
 
