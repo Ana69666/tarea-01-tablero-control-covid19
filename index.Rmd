@@ -1,6 +1,6 @@
 ---
 title: "Tablero de Control para covid19 CR"
-subtitle: "Elaborado por Ana LopezU.(B94386), Matthias Pelz(B95845), Jefferson Salas()"
+subtitle: "Elaborado por Ana LopezU.(B94386), Matthias Pelz(B95845), Jefferson Salas(B97068)"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
@@ -134,7 +134,7 @@ m2
 Datos Casos confirmados COVID-19
 ===========================================   
 
-Row {data-width=200}
+Column {data-width=200}
 -----------------------------------------------------------------------
 
 ### Datos de casos confirmados por cantón Covid-19
@@ -142,13 +142,13 @@ Row {data-width=200}
 ```{r}
 cantones_covid19 %>%
   select(Confirmados=confirmados, Canton=canton) %>%
-  arrange(Confirmados) %>%
+  arrange(desc(Confirmados)) %>%
   st_drop_geometry() %>%
   kable()%>%
   kable_styling() %>%
   scroll_box(
-    width = "600px", 
-    height = "400px", 
+    width = "900px", 
+    height = "900px", 
     fixed_thead = TRUE
   )
 ```
@@ -158,13 +158,13 @@ cantones_covid19 %>%
 ```{r}
 provincias_covid19 %>%
   select(Confirmados=confirmados, Provincia=provincia) %>%
-  arrange(Confirmados) %>%
+  arrange(desc(Confirmados)) %>%
   st_drop_geometry() %>%
   kable()%>%
   kable_styling() %>%
   scroll_box(
-    width = "600px", 
-    height = "600px", 
+    width = "900px", 
+    height = "900px", 
     fixed_thead = TRUE
   )
 ```
@@ -196,7 +196,7 @@ ggplot(covid19_provincia, aes(x=reorder(provincia, -confirmados), y=confirmados)
 Tabla datos Totales
 ===================================== 
 
-Column {data-width=2000}
+Row {data-width=1000}
 -----------------------------------------------------------------------
 
 ```{r}
@@ -210,7 +210,7 @@ kable(
 ) %>%
 kable_styling() %>%
 scroll_box(
-  width = "800px", 
+  width = "1500px", 
   height = "800px", 
   fixed_thead = TRUE
 )
